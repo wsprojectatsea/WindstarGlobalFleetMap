@@ -922,7 +922,7 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; }
   body {
-    background: var(--ws-paper);
+    background: #ffffff;
     color: var(--ws-blue-ink);
     font-family: var(--font-sans, "Montserrat", system-ui, sans-serif);
     -webkit-font-smoothing: antialiased;
@@ -1096,6 +1096,25 @@
   }
   .fleet-foot .mark { font-family: var(--font-serif, "Cormorant Garamond", Georgia, serif); font-style: italic; font-size: 15px; color: var(--ws-blue); letter-spacing: 0; }
 
+  /* ─── Weather badges ─── */
+  .roster li .meta .wx { display: flex; align-items: baseline; gap: 5px; font-size: 12px; margin-top: 1px; }
+  .roster li .meta .wx strong { color: var(--ws-blue,#1F4D6B); font-weight: 700; font-size: 13px; }
+  .roster li .meta .wx .wx-cond { font-size: 10.5px; color: var(--ws-stone-400,#8A9CAA); font-weight: 400; letter-spacing: 0.04em; }
+  .wx-cfg { background: none; border: none; cursor: pointer; padding: 2px 5px; color: rgba(31,77,107,0.35); line-height: 1; transition: color 160ms; margin-left: 2px; display: flex; align-items: center; }
+  .wx-cfg:hover { color: var(--ws-blue,#1F4D6B); }
+  .wx-overlay { position: fixed; inset: 0; background: rgba(14,36,54,0.55); z-index: 300; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 250ms; }
+  .wx-overlay.open { opacity: 1; pointer-events: all; }
+  .wx-box { background: #fff; border-radius: 4px; padding: 28px 24px; width: 360px; max-width: 94vw; box-shadow: 0 8px 40px rgba(14,36,54,0.22); }
+  .wx-box h3 { font-family: var(--font-serif,"Cormorant Garamond",Georgia,serif); font-size: 22px; color: var(--ws-blue-ink,#0E2436); margin: 0 0 6px; }
+  .wx-box p { font-size: 13px; color: var(--ws-stone-400,#8A9CAA); margin: 0 0 18px; line-height: 1.55; }
+  .wx-box label { display: block; font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; color: var(--ws-blue,#1F4D6B); margin-bottom: 5px; }
+  .wx-box input { width: 100%; box-sizing: border-box; border: 1px solid rgba(20,51,72,0.2); border-radius: 2px; padding: 9px 10px; font-size: 13px; font-family: monospace; margin-bottom: 4px; }
+  .wx-box input:focus { outline: 2px solid var(--ws-seafoam-deep,#6A9FB0); outline-offset: 1px; border: none; }
+  .wx-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+  .wx-save { background: var(--ws-blue,#1F4D6B); color: #fff; border: none; border-radius: 2px; padding: 9px 18px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; cursor: pointer; transition: background 160ms; }
+  .wx-save:hover { background: #11324A; }
+  .wx-cancel { background: none; border: 1px solid rgba(20,51,72,0.2); border-radius: 2px; padding: 9px 14px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; cursor: pointer; color: var(--ws-stone-400,#8A9CAA); }
+
   @media (max-width: 860px) {
     .panel { grid-template-columns: 1fr; gap: 28px; }
     .roster li .meta .nm { font-size: 20px; }
@@ -1108,7 +1127,7 @@
       <img class="logo" src="assets/WS_Logo_Blue.png" alt="Windstar Cruises">
       <span class="eyebrow">Live Fleet Positions</span>
       <h1>Following the Fleet</h1>
-      <p class="lede">Six small ships, 330+ ports, one world worth getting close to. Spin the globe or choose a yacht to see where each is sailing right now — <em>180° from Ordinary.</em></p>
+      <p class="lede">Seven small ships, 330+ ports, one world worth getting close to. Spin the globe or choose a yacht to see where each is sailing right now — <em>180° from Ordinary.</em></p>
     </div>
 
     <div class="panel">
@@ -1125,7 +1144,7 @@
             <canvas id="globe" width="380" height="380"></canvas>
             <div class="labels" id="labels"></div>
           </div>
-          <div class="live"><span class="dot"></span>Tracking live</div>
+          <div class="live"><span class="dot"></span>Tracking live<button class="wx-cfg" id="wxCfg" title="Configure live weather"><svg viewBox="0 0 18 14" width="16" height="12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M5 12c-2.2 0-4-1.8-4-4 0-1.9 1.3-3.5 3.1-3.9C4.8 2.2 6.8 1 9 1c2 0 3.7 1.1 4.6 2.8C15 3.6 17 5.2 17 7.5c0 2.5-2 4.5-4.5 4.5H5z"/></svg></button></div>
           <div class="zoom">
             <button id="zin" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 24 24"><line x1="12" y1="6" x2="12" y2="18"></line><line x1="6" y1="12" x2="18" y2="12"></line></svg></button>
             <button id="zout" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 24 24"><line x1="6" y1="12" x2="18" y2="12"></line></svg></button>
@@ -1140,6 +1159,19 @@
           <span class="cnt">7 yachts at sea</span>
         </div>
         <ul class="roster" id="roster"></ul>
+      </div>
+    </div>
+
+    <div class="wx-overlay" id="wxOverlay">
+      <div class="wx-box">
+        <h3>Live Weather at Sea</h3>
+        <p>Display real-time conditions at each ship's position. Free API at <a href="https://openweathermap.org/api" target="_blank" rel="noopener" style="color:var(--ws-seafoam-deep,#6A9FB0)">openweathermap.org</a> &mdash; sign up and copy your Current Weather API key.</p>
+        <label for="wxKeyInput">OpenWeatherMap API Key</label>
+        <input id="wxKeyInput" type="text" placeholder="Paste your API key here" autocomplete="off" spellcheck="false">
+        <div class="wx-actions">
+          <button class="wx-cancel" id="wxCancel">Cancel</button>
+          <button class="wx-save" id="wxSave">Save &amp; Fetch</button>
+        </div>
       </div>
     </div>
 
@@ -1165,16 +1197,73 @@
 
   const cx = SIZE / 2, cy = SIZE / 2, R = SIZE * 0.40;
 
-  // Windstar fleet — live AIS positions (MarineTraffic / VesselFinder), Jun 2026
+  // Windstar fleet — positions from public AIS, Jun 18 2026
   const SHIPS = [
-    { name: "Wind Surf",   region: "W. Mediterranean", loc: "En route to Tarragona, Spain",   coord: [1.25, 41.1] },
-    { name: "Wind Star",   region: "Aegean Sea",        loc: "Off Santorini, Greece",          coord: [25.43, 36.42] },
-    { name: "Star Legend", region: "English Channel",   loc: "Departing Rouen, France",        coord: [0.10, 49.50] },
-    { name: "Star Pride",  region: "North Atlantic",    loc: "Bound for Gourock, Scotland",    coord: [-4.82, 55.96] },
-    { name: "Wind Spirit", region: "Eastern Pacific",   loc: "Off Quepos, Costa Rica",         coord: [-84.16, 9.43] },
-    { name: "Star Breeze", region: "South Pacific",     loc: "En route to Bora Bora",          coord: [-151.74, -16.50] },
-    { name: "Star Seeker", region: "Alaska",            loc: "Inside Passage, bound for Juneau", coord: [-133.90, 57.80] },
+    { name: "Wind Surf",   type: "sail",  mmsi: "309242000", region: "W. Mediterranean", loc: "En route to Tarragona, Spain",          coord: [1.25, 41.10] },
+    { name: "Wind Star",   type: "sail",  mmsi: "311040700", region: "Aegean Sea",        loc: "En route to Piraeus, Greece",            coord: [23.85, 37.20] },
+    { name: "Star Legend", type: "motor", mmsi: "311085000", region: "North Sea",         loc: "Approaching Edinburgh (Leith), Scotland", coord: [-3.18, 56.00] },
+    { name: "Star Pride",  type: "motor", mmsi: "311084000", region: "Irish Sea",         loc: "Completing Ireland circumnavigation",      coord: [-5.93, 54.60] },
+    { name: "Wind Spirit", type: "sail",  mmsi: "309056000", region: "Aegean Sea",        loc: "Dodecanese Islands, Greek Islands cruise", coord: [27.02, 37.05] },
+    { name: "Star Breeze", type: "motor", mmsi: "311083000", region: "South Pacific",     loc: "Papeete, Tahiti — Dreams of Tahiti cruise",coord: [-149.57, -17.54] },
+    { name: "Star Seeker", type: "motor", mmsi: "255806211", region: "Alaska",            loc: "Inside Passage, bound for Juneau",         coord: [-133.90, 57.80] },
   ];
+
+  const HQ = { coord: [-80.19, 25.76], label: "Miami HQ" };
+
+  // ── Live Weather ────────────────────────────────────────────────────────────────────
+  // Uses OpenWeatherMap free tier (1,000 calls/day).
+  // Click the cloud button to enter your free key from openweathermap.org
+  const WX_CACHE_MS = 30 * 60 * 1000;
+  let wxKey = ''; try { wxKey = localStorage.getItem('ws_wx_key') || ''; } catch(e) {}
+
+  const WX_COND = {
+    'Clear':'Sunny','Clouds':'Cloudy','Rain':'Rain','Drizzle':'Drizzle',
+    'Thunderstorm':'Storms','Snow':'Snow','Mist':'Misty','Fog':'Foggy','Haze':'Hazy'
+  };
+
+  function updateWxEl(s) {
+    if (!s.wxEl || !s.weather) return;
+    s.wxEl.innerHTML = '<strong>' + s.weather.temp + '&deg;F</strong><span class="wx-cond">' + s.weather.cond + '</span>';
+  }
+
+  async function fetchShipWeather(s) {
+    const url = 'https://api.openweathermap.org/data/2.5/weather?lat=' + s.coord[1] +
+      '&lon=' + s.coord[0] + '&appid=' + wxKey + '&units=imperial';
+    const r = await fetch(url, { signal: AbortSignal.timeout(6000) });
+    const j = await r.json();
+    if (j.main) {
+      s.weather = { temp: Math.round(j.main.temp), cond: WX_COND[j.weather[0].main] || j.weather[0].main, wind: Math.round(j.wind.speed) };
+      updateWxEl(s);
+    }
+  }
+
+  async function fetchAllWeather() {
+    if (!wxKey) return;
+    try {
+      const c = JSON.parse(localStorage.getItem('ws_wx_cache') || 'null');
+      if (c && Date.now() - c.ts < WX_CACHE_MS) {
+        c.data.forEach(d => { const s = SHIPS.find(x => x.name === d.name); if (s && d.w) { s.weather = d.w; updateWxEl(s); } });
+        return;
+      }
+    } catch(e) {}
+    await Promise.allSettled(SHIPS.map(fetchShipWeather));
+    try { localStorage.setItem('ws_wx_cache', JSON.stringify({ ts: Date.now(), data: SHIPS.map(s => ({ name: s.name, w: s.weather || null })) })); } catch(e) {}
+  }
+
+  if (wxKey) fetchAllWeather();
+
+  const wxOverlayEl  = document.getElementById('wxOverlay');
+  const wxKeyInputEl = document.getElementById('wxKeyInput');
+  document.getElementById('wxCfg').addEventListener('click', () => { wxKeyInputEl.value = wxKey; wxOverlayEl.classList.add('open'); });
+  document.getElementById('wxCancel').addEventListener('click', () => wxOverlayEl.classList.remove('open'));
+  document.getElementById('wxSave').addEventListener('click', () => {
+    wxKey = wxKeyInputEl.value.trim();
+    try { localStorage.setItem('ws_wx_key', wxKey); } catch(e) {}
+    wxOverlayEl.classList.remove('open');
+    if (wxKey) fetchAllWeather();
+  });
+  wxOverlayEl.addEventListener('click', e => { if (e.target === wxOverlayEl) wxOverlayEl.classList.remove('open'); });
+  // ────────────────────────────────────────────────────────────────────────
 
   let focused = -1;
 
@@ -1188,11 +1277,16 @@
     s.el = el;
 
     const li = document.createElement("li");
+    const pinPath = s.type === "sail"
+      ? "M13 4 L13 17 L21 17 Q16 10 13 4 Z M11.4 7 L11.4 17 L5 17 Q8.3 11 11.4 7 Z M5 18 L19 18 L16.5 21 Q12 22.4 7.5 21 Z"
+      : "M1 19 L16 19 Q21 19 22 15 Q22 13 20 13 L1 13 Z M2 13 L2 10 L20 10 L20 13 Z M3 10 L3 8 L18 8 L18 10 Z M4 8 L4 6 L14 6 L14 8 Z M6 6 L5.5 4 L9.5 4 L9 6 Z M13 6 L13 4 M11 5 L15 5";
     li.innerHTML =
-      '<svg class="pin" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 4 L13 17 L21 17 Q16 10 13 4 Z M11.4 7 L11.4 17 L5 17 Q8.3 11 11.4 7 Z M5 18 L19 18 L16.5 21 Q12 22.4 7.5 21 Z"></path></svg>' +
+      '<svg class="pin" viewBox="0 0 24 24" aria-hidden="true"><path d="' + pinPath + '"></path></svg>' +
       '<span class="meta"><span class="nm">' + s.name + '</span>' +
-      '<span class="loc">' + s.loc + '</span></span>' +
+      '<span class="loc">' + s.loc + '</span>' +
+      '<span class="wx">—</span></span>' +
       '<span class="region">' + s.region + '</span>';
+    s.wxEl = li.querySelector('.wx');
     li.addEventListener("click", () => focusShip(i));
     rosterEl.appendChild(li);
     s.li = li;
@@ -1213,6 +1307,90 @@
   const SPIN = 6;
 
   function setZoom(z) { zoom = Math.max(0.75, Math.min(5, z)); render(); }
+
+  // motor yacht glyph — Star Breeze-style profile: former Seabourn Spirit class,
+  // stretched luxury yacht — long low hull, rounded clipper bow, aft funnel, multi-deck
+  function drawMotorYacht(x, y, u, a) {
+    ctx.save();
+    ctx.translate(x, y);
+    const p = new Path2D();
+
+    // ── HULL — long low body, rounded double-curve clipper bow (right), flat transom (left)
+    p.moveTo(-2.1*u,  0.55*u);                                   // stern bottom
+    p.lineTo( 1.4*u,  0.55*u);                                   // keel
+    p.quadraticCurveTo( 1.95*u, 0.55*u,  2.2*u,  0.15*u);       // bow lower sweep
+    p.quadraticCurveTo( 2.1*u, -0.1*u,   1.85*u, -0.15*u);      // bow upper curve
+    p.lineTo(-2.1*u, -0.15*u);                                   // main deck
+    p.closePath();                                                // transom
+
+    // ── LOWER SUPERSTRUCTURE — nearly full length, generous height
+    p.moveTo(-1.95*u, -0.15*u);
+    p.lineTo(-1.95*u, -0.62*u);
+    p.lineTo( 1.72*u, -0.62*u);
+    p.lineTo( 1.72*u, -0.15*u);
+    p.closePath();
+
+    // ── MID SUPERSTRUCTURE
+    p.moveTo(-1.78*u, -0.62*u);
+    p.lineTo(-1.78*u, -1.00*u);
+    p.lineTo( 1.48*u, -1.00*u);
+    p.lineTo( 1.48*u, -0.62*u);
+    p.closePath();
+
+    // ── BRIDGE DECK — narrower, slightly set back at both ends
+    p.moveTo(-1.52*u, -1.00*u);
+    p.lineTo(-1.52*u, -1.30*u);
+    p.lineTo( 1.05*u, -1.30*u);
+    p.lineTo( 1.05*u, -1.00*u);
+    p.closePath();
+
+    // ── AFT FUNNEL — aft of midships, slightly forward-raked (signature Star-class feature)
+    p.moveTo(-0.88*u, -1.30*u);
+    p.lineTo(-0.95*u, -1.64*u);
+    p.lineTo(-0.42*u, -1.64*u);
+    p.lineTo(-0.38*u, -1.30*u);
+    p.closePath();
+
+    // ── FORWARD MAST
+    p.moveTo( 0.58*u, -1.30*u);
+    p.lineTo( 0.58*u, -1.68*u);
+
+    // ── RADAR ARM
+    p.moveTo( 0.22*u, -1.52*u);
+    p.lineTo( 0.95*u, -1.52*u);
+
+    ctx.lineJoin = "round"; ctx.lineCap = "round";
+    ctx.shadowColor = "rgba(14, 36, 54, " + (0.42 * a) + ")";
+    ctx.shadowBlur = 5; ctx.shadowOffsetY = 1.5;
+    ctx.strokeStyle = "rgba(251, 249, 244, " + (0.95 * a) + ")";
+    ctx.lineWidth = 2.8; ctx.stroke(p);
+    ctx.shadowColor = "transparent"; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+    ctx.fillStyle = "rgba(140, 193, 160, " + a + ")"; ctx.fill(p);
+    ctx.strokeStyle = "rgba(14, 36, 54, " + (0.50 * a) + ")";
+    ctx.lineWidth = 0.9; ctx.stroke(p);
+    ctx.restore();
+  }
+
+  // HQ marker — small navy circle with seafoam W
+  function drawHQ(x, y, a) {
+    const r = 8;
+    ctx.save();
+    ctx.translate(x, y);
+    // halo
+    ctx.shadowColor = "rgba(14, 36, 54, " + (0.35 * a) + ")";
+    ctx.shadowBlur = 6;
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(31, 77, 107, " + (0.92 * a) + ")"; ctx.fill();
+    ctx.shadowColor = "transparent"; ctx.shadowBlur = 0;
+    ctx.strokeStyle = "rgba(156, 194, 210, " + (0.85 * a) + ")";
+    ctx.lineWidth = 1.4; ctx.stroke();
+    // W glyph
+    ctx.font = "bold " + (r * 1.35) + "px 'Cormorant Garamond', Georgia, serif";
+    ctx.fillStyle = "rgba(156, 194, 210, " + a + ")";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("W", 0, 0.5);
+    ctx.restore();
+  }
 
   // small light-green sail glyph, centred on (x,y) — with paper halo + crisp edge so it pops
   function drawSail(x, y, u, a) {
@@ -1294,7 +1472,8 @@
           ctx.strokeStyle = "rgba(140, 193, 160, " + (0.32 * vis * (1 - pr)) + ")";
           ctx.lineWidth = 1.4; ctx.stroke();
         }
-        drawSail(p[0], p[1], i === focused ? 7.4 : 6.4, vis);
+        if (s.type === "sail") drawSail(p[0], p[1], i === focused ? 7.4 : 6.4, vis);
+        else drawMotorYacht(p[0], p[1], i === focused ? 7.4 : 6.4, vis);
 
         let dx = p[0] - cx, dy = p[1] - cy;
         const len = Math.hypot(dx, dy) || 1; dx /= len; dy /= len;
@@ -1311,6 +1490,15 @@
         s._p = null;
       }
     });
+
+    // Miami HQ marker
+    const hqDist = d3.geoDistance(HQ.coord, center);
+    if (hqDist < Math.PI / 2) {
+      const hqP = projection(HQ.coord);
+      const hqK = Math.cos(hqDist);
+      const hqVis = Math.max(0, Math.min(1, (hqK - 0.04) / 0.22));
+      if (hqP && hqVis > 0.01) drawHQ(hqP[0], hqP[1], hqVis);
+    }
    } catch (e) { console.error("render error", e); }
   }
 
